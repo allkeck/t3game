@@ -5,9 +5,16 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
+	"path"
+	"strings"
 	"t3game/internal/api"
 	"t3game/internal/app"
 	"time"
+)
+
+const (
+	FSPATH = "web/dist"
 )
 
 func main() {
@@ -25,9 +32,23 @@ func main() {
 
 	http.HandleFunc("/test", randomHandler)
 
-	webHandler := http.FileServer(http.Dir("web/dist"))
-	http.Handle("/", webHandler)
-	http.Handle("/game", http.StripPrefix("/game", webHandler))
+	webHandler := http.FileServer(http.Dir(FSPATH))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// stolen from https://stackoverflow.com/a/64687181
+		// If the requested file exists then return if; otherwise return index.html (fileserver default page)
+		if r.URL.Path != "/" {
+			fullPath := FSPATH + strings.TrimPrefix(path.Clean(r.URL.Path), "/")
+			_, err := os.Stat(fullPath)
+			if err != nil {
+				if !os.IsNotExist(err) {
+					panic(err)
+				}
+				// Requested file does not exist so we return the default (resolves to index.html)
+				r.URL.Path = "/"
+			}
+		}
+		webHandler.ServeHTTP(w, r)
+	})
 
 	log.Fatal(http.ListenAndServe(":7000", nil))
 }
