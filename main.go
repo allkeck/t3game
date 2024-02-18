@@ -13,8 +13,8 @@ import (
 func main() {
 
 	gapp := app.NewGameApp()
-	http.Handle("/", http.FileServer(http.Dir("web")))
-	http.Handle("/game", http.FileServer(http.Dir("web")))
+	http.Handle("/dist", http.FileServer(http.Dir("web")))
+	http.Handle("/dist/game", http.FileServer(http.Dir("web")))
 
 	http.HandleFunc("/new-game", api.NewGameHandlerCreator(gapp))
 	http.HandleFunc("/list-games", api.ListGamesHandlerCreator(gapp))
