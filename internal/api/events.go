@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -34,6 +35,7 @@ var (
 func EventsHandlerCreator(app *app.GameApp) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		uid := strings.TrimPrefix(r.URL.Path, "/events/")
+		log.Printf("api:events handler %s\n", uid)
 		var l lobby
 		var exists bool
 		state.Lock()
