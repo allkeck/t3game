@@ -5,11 +5,25 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"t3game/internal/api"
+	"t3game/internal/app"
 	"time"
 )
 
 func main() {
+
+	gapp := app.NewGameApp()
 	http.Handle("/", http.FileServer(http.Dir("web")))
+	http.Handle("/game", http.FileServer(http.Dir("web")))
+
+	http.HandleFunc("/new-game", api.NewGameHandlerCreator(gapp))
+	http.HandleFunc("/list-games", api.ListGamesHandlerCreator(gapp))
+
+	// `/state/:uid`
+	http.HandleFunc("/state", api.GameForUidHandlerCreator(gapp))
+
+	// `/events/:uid`
+	// http.HandleFunc("/events", )
 
 	http.HandleFunc("/test", randomHandler)
 
