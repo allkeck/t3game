@@ -11,10 +11,11 @@ import (
 )
 
 func main() {
+	webHandler := http.FileServer(http.Dir("web/dist"))
+	http.Handle("/", webHandler)
+	http.Handle("/game", http.StripPrefix("/game", webHandler))
 
 	gapp := app.NewGameApp()
-	http.Handle("/", http.FileServer(http.Dir("web/dist")))
-	http.Handle("/game", http.FileServer(http.Dir("web/dist")))
 
 	http.HandleFunc("/new-game", api.NewGameHandlerCreator(gapp))
 	http.HandleFunc("/list-games", api.ListGamesHandlerCreator(gapp))
