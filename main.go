@@ -28,7 +28,7 @@ func main() {
 	http.HandleFunc("/state", api.GameForUidHandlerCreator(gapp))
 
 	// `/events/:uid`
-	// http.HandleFunc("/events", )
+	http.HandleFunc("/events", api.EventsHandlerCreator(gapp))
 
 	http.HandleFunc("/test", randomHandler)
 
