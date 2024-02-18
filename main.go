@@ -11,9 +11,6 @@ import (
 )
 
 func main() {
-	webHandler := http.FileServer(http.Dir("web/dist"))
-	http.Handle("/", webHandler)
-	http.Handle("/game", http.StripPrefix("/game", webHandler))
 
 	gapp := app.NewGameApp()
 
@@ -27,6 +24,10 @@ func main() {
 	// http.HandleFunc("/events", )
 
 	http.HandleFunc("/test", randomHandler)
+
+	webHandler := http.FileServer(http.Dir("web/dist"))
+	http.Handle("/", webHandler)
+	http.Handle("/game", http.StripPrefix("/game", webHandler))
 
 	log.Fatal(http.ListenAndServe(":7000", nil))
 }
