@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	FSPATH = "web/dist"
+	FSPATH = "web/dist/"
 )
 
 func main() {
