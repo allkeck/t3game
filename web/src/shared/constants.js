@@ -1,6 +1,7 @@
 export const endpoints = {
   newGame: '/new-game',
   events: '/events',
+  turn: '/turn',
 };
 
 export const eventTypes = {
