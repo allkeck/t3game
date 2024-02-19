@@ -12,6 +12,7 @@ export const Lobby = () => {
   const [lobbyStarted, setLobbyStarted] = useState(false);
   const [xPlayer, setXPlayer] = useState(false);
   const [isMyTurn, setIsMyTurn] = useState(false);
+  const [currentGameBoard, setCurrentGameBoard] = useState(gameBoard);
 
   const { uid } = useParams();
 
@@ -34,7 +35,18 @@ export const Lobby = () => {
     });
 
     eventSource.addEventListener(eventTypes.turn, (event) => {
-      console.log(event);
+      const { row, col, xPlayer } = JSON.parse(event.data);
+
+      setCurrentGameBoard(
+        currentGameBoard.map((item) => {
+          if (item.position[0] === row && item.position[1] === col) {
+            item.field = xPlayer ? 'X' : 'O';
+          }
+
+          return item;
+        })
+      );
+      setIsMyTurn(true);
     });
 
     return () => {
@@ -43,17 +55,28 @@ export const Lobby = () => {
   }, [uid]);
 
   const playerTurnClickHandler = (position) => {
-    sendTurnData(uid, xPlayer, position[0], position[1]);
+    const [row, col] = position;
+
+    sendTurnData(uid, xPlayer, row, col);
 
     setIsMyTurn(false);
+    setCurrentGameBoard(
+      currentGameBoard.map((item) => {
+        if (item.position[0] === row && item.position[1] === col) {
+          item.field = xPlayer ? 'X' : 'O';
+        }
+
+        return item;
+      })
+    );
   };
 
   return (
     <div className={classNames}>
-      {!lobbyStarted && <div>waiting for players</div>}
+      <div>{lobbyStarted ? `you are on the ${xPlayer ? 'X' : 'O'}-side` : 'waiting for players'}</div>
       {isMyTurn && <div>make a turn</div>}
       <div className="board">
-        {gameBoard.map(({ id, field, position }) => (
+        {currentGameBoard.map(({ id, field, position }) => (
           <GameButton key={id} name={field} onClick={() => playerTurnClickHandler(position)} />
         ))}
       </div>
