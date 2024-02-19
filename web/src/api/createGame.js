@@ -1,9 +1,9 @@
 import axios from 'axios';
-import { settings } from '../shared/constants';
+import { endpoints } from '../shared/constants';
 
 export const createGame = async () => {
   try {
-    const data = await axios(settings.newGame);
+    const data = await axios(endpoints.newGame);
 
     return data;
   } catch (error) {

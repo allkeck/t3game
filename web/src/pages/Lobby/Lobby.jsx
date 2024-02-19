@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { stratGameBoard } from '../../shared/constants';
-import { settings } from '../../shared/constants';
+import { eventTypes, stratGameBoard } from '../../shared/constants';
+import { endpoints } from '../../shared/constants';
 
 import { GameButton } from '../../components/GameButton/GameButton';
 
@@ -12,9 +12,9 @@ export const Lobby = () => {
   const { uid } = useParams();
 
   useEffect(() => {
-    const eventSource = new EventSource(`${settings.events}/${uid}`);
+    const eventSource = new EventSource(`${endpoints.events}/${uid}`);
 
-    eventSource.addEventListener('message', (event) => {
+    eventSource.addEventListener(eventTypes.start, (event) => {
       console.log(event);
     });
 

@@ -1,9 +1,13 @@
-export const settings = {
+export const endpoints = {
   newGame: '/new-game',
   events: '/events',
 };
 
-export const stratGameBoard = [
+export const eventTypes = {
+  start: 'start',
+};
+
+export const startGameBoard = [
   { id: 1, field: 'e' },
   { id: 2, field: 'e' },
   { id: 3, field: 'e' },
