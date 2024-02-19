@@ -5,8 +5,9 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Start } from './pages/Start/Start.jsx';
 import { Lobby } from './pages/Lobby/Lobby.jsx';
 
-import './index.css';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary.jsx';
+
+import './index.css';
 
 const router = createBrowserRouter([
   {

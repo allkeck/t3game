@@ -18,7 +18,9 @@ export const Lobby = () => {
       console.log(event);
     });
 
-    return () => eventSource.close();
+    return () => {
+      eventSource.close();
+    };
   }, [uid]);
 
   return (
