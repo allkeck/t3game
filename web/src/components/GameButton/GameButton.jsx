@@ -1,4 +1,4 @@
-import './style.css';
+import './GameButton.css';
 
 export const GameButton = ({ name }) => {
   return (

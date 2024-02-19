@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-import { App } from './App.jsx';
+import { Start } from './pages/Start/Start.jsx';
 import { Lobby } from './pages/Lobby/Lobby.jsx';
 
 import './index.css';
@@ -11,7 +11,7 @@ import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary.jsx';
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />,
+    element: <Start />,
     errorElement: <ErrorBoundary />,
   },
   {

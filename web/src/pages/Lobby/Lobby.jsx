@@ -2,19 +2,23 @@ import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { stratGameBoard } from '../../shared/constants';
-import { lobbyConnect } from '../../api/lobbyConnect';
+import { settings } from '../../shared/constants';
 
 import { GameButton } from '../../components/GameButton/GameButton';
 
-import './style.css';
+import './Lobby.css';
 
 export const Lobby = () => {
   const { uid } = useParams();
 
   useEffect(() => {
-    const eS = lobbyConnect(uid);
+    const eventSource = new EventSource(`${settings.events}/${uid}`);
 
-    return () => eS.close();
+    eventSource.addEventListener('message', (event) => {
+      console.log(event);
+    });
+
+    return () => eventSource.close();
   }, [uid]);
 
   return (

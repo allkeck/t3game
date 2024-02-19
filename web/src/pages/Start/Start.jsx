@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { createGame } from './api/createGame';
+import { createGame } from '../../api/createGame';
 import { Link } from 'react-router-dom';
 
-import './App.css';
+import './Start.css';
 
-export const App = () => {
+export const Start = () => {
   const [game, setGame] = useState(null);
 
   const newGame = async () => {
