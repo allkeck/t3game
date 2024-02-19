@@ -139,8 +139,8 @@ var (
 	startGameMsg = GameMsg{
 		Event: "start",
 	}
-	startGameXPlayer = "{xPlayer:true}"
-	startGameOPlayer = "{xPlayer:false}"
+	startGameXPlayer = `{"xPlayer":true}`
+	startGameOPlayer = `{"xPlayer":false}`
 
 	ErrPlayersNotConnected     = fmt.Errorf("players not connected")
 	ErrPlayersAlreadyConnected = fmt.Errorf("players already connected")
