@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { endpoints } from '../shared/constants';
 
-export const sendTurnData = async ({ uid, XPlayer, row, col }) => {
+export const sendTurnData = async (uid, XPlayer, row, col) => {
   try {
     const data = await axios({
       method: 'post',
