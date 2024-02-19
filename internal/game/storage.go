@@ -18,7 +18,7 @@ type (
 		games map[string]Game
 	}
 	Game struct {
-		Uid   uuid.UUID
+		Uid   string
 		State []string
 	}
 )
@@ -38,7 +38,7 @@ func InitStorage() GameStorage {
 }
 
 func (s *storageImpl) NewGame() Game {
-	uid := uuid.New()
+	uid := uuid.New().String()
 	game := Game{
 		Uid: uid,
 		State: []string{
@@ -48,7 +48,7 @@ func (s *storageImpl) NewGame() Game {
 	}
 
 	s.Lock()
-	s.games[uid.String()] = game
+	s.games[uid] = game
 	s.Unlock()
 
 	return game

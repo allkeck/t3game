@@ -11,7 +11,7 @@ func NewGameHandlerCreator(app *app.GameApp) func(w http.ResponseWriter, r *http
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger := slog.With("op", "api:NewGameHandler")
 		newGame := app.NewGame()
-		logger.Info("game created", "uid", newGame.Uid.String())
+		logger.Info("game created", "uid", newGame.Uid)
 		json.NewEncoder(w).Encode(newGame)
 	}
 }

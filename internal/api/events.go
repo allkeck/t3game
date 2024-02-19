@@ -2,23 +2,13 @@ package api
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"strings"
-	"sync"
 	"t3game/internal/app"
 )
 
 type (
-	EventsState struct {
-		sync.RWMutex
-		connections map[string]lobby
-	}
-	lobby struct {
-		xPlayer *http.ResponseWriter
-		oPlayer *http.ResponseWriter
-	}
-
 	sseMsg struct {
 		event string
 		data  string
@@ -26,48 +16,43 @@ type (
 	}
 )
 
-var (
-	state = EventsState{
-		connections: make(map[string]lobby),
-	}
-)
-
 func EventsHandlerCreator(app *app.GameApp) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		uid := strings.TrimPrefix(r.URL.Path, "/events/")
-		log.Printf("api:events handler %s\n", uid)
-		var l lobby
-		var exists bool
-		state.Lock()
-		defer state.Unlock()
-		if l, exists = state.connections[uid]; !exists {
-			state.connections[uid] = lobby{}
-		}
+		logger := slog.With("op", "api:EventsHandler")
 
-		if l.isFull() {
-			w.WriteHeader(http.StatusConflict)
-			w.Write([]byte("players already connected"))
+		uid := strings.TrimPrefix(r.URL.Path, "/events/")
+
+		ch, err := app.ConnectToLobby(uid)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(err.Error()))
 			return
 		}
 
-		_ = l.addPlayer(&w)
+		logger = logger.With("uid", uid)
+		logger.Info("connected to lobby")
+
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			http.Error(w, "Streaming unsupported!", http.StatusForbidden) // todo: proper error handling
+			return
+		}
 
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Connection", "keep-alive")
 		w.Header().Set("Content-Type", "text/event-stream")
+		w.WriteHeader(http.StatusOK)
+		flusher.Flush()
 
-		if l.isFull() {
-			msg := sseMsg{
-				event: "start",
-				data:  "{xPlayer:false}",
-			}
-			fmt.Fprint(*l.oPlayer, msg)
-			(*l.oPlayer).(http.Flusher).Flush()
+		var msg sseMsg
+		for gm := range ch {
+			slog.Info("got msg", "gm", gm)
 
-			msg.data = "{xPlayer:true}"
-			fmt.Fprint(*l.xPlayer, msg)
-			(*l.xPlayer).(http.Flusher).Flush()
+			msg.from(gm)
+
+			fmt.Fprint(w, msg)
+			flusher.Flush()
 		}
 	}
 }
@@ -79,21 +64,7 @@ func (m sseMsg) String() string {
 	return fmt.Sprintf("data: %s\n\n", m.data)
 }
 
-func (l *lobby) addPlayer(w *http.ResponseWriter) (isXPlayer bool) {
-	if l.oPlayer != nil && l.xPlayer == nil {
-		l.xPlayer = w
-		isXPlayer = true
-		return
-	}
-
-	if l.oPlayer == nil && l.xPlayer != nil {
-		l.oPlayer = w
-		return
-	}
-
-	return
-}
-
-func (l lobby) isFull() bool {
-	return l.oPlayer != nil && l.xPlayer != nil
+func (m *sseMsg) from(gm app.GameMsg) {
+	m.event = gm.Event
+	m.data = gm.Data
 }
