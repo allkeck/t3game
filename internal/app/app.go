@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math/rand"
@@ -21,12 +22,20 @@ type (
 		xConnected bool
 		oPlayer    chan GameMsg
 		oConnected bool
+		started    bool
 	}
 
 	GameMsg struct {
 		Event string
 		Data  string
 		// Id    int
+	}
+
+	PlayerTurn struct {
+		Uid     string `json:"uid"`
+		XPlayer bool   `json:"xPlayer"`
+		Row     int    `json:"row"`
+		Col     int    `json:"col"`
 	}
 
 	LobbyNotFoundError struct {
@@ -45,6 +54,42 @@ func (app *GameApp) NewGame() game.Game {
 	g := app.storage.NewGame()
 	app.newLobby(g.Uid)
 	return g
+}
+
+func (app *GameApp) MakeTurn(pt PlayerTurn) error {
+	if err := app.storage.MakeTurn(pt.Uid, pt.XPlayer, pt.Row, pt.Col); err != nil {
+		return err
+	}
+
+	app.lmu.RLock()
+	defer app.lmu.RUnlock()
+	l, found := app.lobbys[pt.Uid]
+
+	if !found {
+		return LobbyNotFoundError{pt.Uid}
+	}
+
+	if !l.started {
+		return ErrLobbyNotGoing
+	}
+
+	var ch chan GameMsg
+	if pt.XPlayer {
+		ch = l.oPlayer
+	} else {
+		ch = l.xPlayer
+	}
+
+	msg := turnGameMsg
+	data, err := json.Marshal(pt)
+	if err != nil {
+		return err
+	}
+	msg.Data = string(data)
+
+	ch <- msg
+
+	return nil
 }
 
 func (app *GameApp) ConnectToLobby(uid string) (ch chan GameMsg, err error) {
@@ -132,10 +177,16 @@ func (l *lobby) startGame() error {
 	msg.Data = startGameXPlayer
 	l.xPlayer <- msg
 
+	l.started = true
+
 	return nil
 }
 
 var (
+	turnGameMsg = GameMsg{
+		Event: "turn",
+	}
+
 	startGameMsg = GameMsg{
 		Event: "start",
 	}
@@ -144,4 +195,5 @@ var (
 
 	ErrPlayersNotConnected     = fmt.Errorf("players not connected")
 	ErrPlayersAlreadyConnected = fmt.Errorf("players already connected")
+	ErrLobbyNotGoing           = fmt.Errorf("lobby not going")
 )

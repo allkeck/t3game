@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"log/slog"
 	"sync"
 
@@ -12,6 +13,7 @@ type (
 		NewGame() Game
 		ListGames() map[string]Game
 		GetGame(uid string) Game
+		MakeTurn(uid string, xPlayer bool, row, col int) error
 	}
 	storageImpl struct {
 		sync.RWMutex
@@ -27,6 +29,12 @@ const (
 	emptyVal = "e"
 	xVal     = "x"
 	oVal     = "o"
+
+	boardSize = 3
+)
+
+var (
+	ErrGameNotFound = fmt.Errorf("game not found")
 )
 
 func InitStorage() GameStorage {
@@ -52,6 +60,25 @@ func (s *storageImpl) NewGame() Game {
 	s.Unlock()
 
 	return game
+}
+
+func (s *storageImpl) MakeTurn(uid string, xPlayer bool, row, col int) error {
+	normalPos := row*boardSize + col
+	s.Lock()
+	defer s.Unlock()
+
+	game, found := s.games[uid]
+	if !found {
+		return ErrGameNotFound
+	}
+
+	if xPlayer {
+		game.State[normalPos] = xVal
+	} else {
+		game.State[normalPos] = oVal
+	}
+
+	return nil
 }
 
 func (s *storageImpl) ListGames() map[string]Game {

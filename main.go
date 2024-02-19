@@ -61,6 +61,8 @@ func main() {
 	// `/events/:uid`
 	router.HandleFunc(regexp.MustCompile("/events/*"), api.EventsHandlerCreator(gapp))
 
+	router.HandleFunc(regexp.MustCompile("/turn"), api.TurnHandlerCreator(gapp))
+
 	router.HandleFunc(regexp.MustCompile("/test"), randomHandler)
 
 	webHandler := http.FileServer(http.Dir(FSPATH))
