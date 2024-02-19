@@ -1,9 +1,13 @@
-.lobby-wrapper {
+.locked {
+  pointer-events: none;
+}
+
+.board {
   display: grid;
   grid-template-columns: repeat(3, 40px);
   grid-template-rows: repeat(3, 40px);
   justify-content: center;
-  gap: 0.5px;
+  gap: 1px;
 
   margin-top: 40px;
 }
