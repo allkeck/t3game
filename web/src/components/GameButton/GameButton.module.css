@@ -6,3 +6,9 @@
   border: none;
   background-color: #eeeeee;
 }
+
+@media (prefers-color-scheme: dark) {
+  .game-button {
+    color: #111111;
+  }
+}

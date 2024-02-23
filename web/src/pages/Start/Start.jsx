@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { createGame } from '../../api/createGame';
 import { Link } from 'react-router-dom';
 
-import './Start.css';
+import styles from './Start.module.css';
 
 export const Start = () => {
   const [game, setGame] = useState(null);
 
   const newGame = async () => {
-    setGame(await createGame());
+    const gameData = await createGame();
+
+    setGame(gameData);
   };
 
   return (
@@ -19,7 +21,9 @@ export const Start = () => {
           new game
         </button>
       ) : (
-        <Link to={`/game/${game.data.Uid}`}>go to lobby</Link>
+        <Link to={`/game/${game.data.Uid}`} className={styles.link}>
+          go to lobby
+        </Link>
       )}
     </>
   );
