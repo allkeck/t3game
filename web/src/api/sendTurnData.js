@@ -3,7 +3,7 @@ import { endpoints } from '../shared/constants';
 
 export const sendTurnData = async (uid, XPlayer, row, col) => {
   try {
-    const data = await axios({
+    await axios({
       method: 'post',
       url: endpoints.turn,
       data: {
@@ -14,7 +14,7 @@ export const sendTurnData = async (uid, XPlayer, row, col) => {
       },
     });
 
-    return data;
+    return true;
   } catch (error) {
     console.error(error);
   }

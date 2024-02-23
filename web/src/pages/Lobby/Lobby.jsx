@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { sendTurnData } from '../../api/sendTurnData';
@@ -16,37 +16,41 @@ export const Lobby = () => {
 
   const { uid } = useParams();
 
+  const startHandler = useCallback((event) => {
+    const data = JSON.parse(event.data);
+
+    setLobbyStarted(true);
+    setXPlayer(data.xPlayer);
+    setIsMyTurn(data.xPlayer);
+  }, []);
+
+  const turnHandler = useCallback((event) => {
+    const { row, col, xPlayer } = JSON.parse(event.data);
+
+    setCurrentGameBoard((prevBoard) => {
+      return prevBoard.map((item) => {
+        if (item.position[0] === row && item.position[1] === col) {
+          item.value = xPlayer ? 'X' : 'O';
+        }
+
+        return item;
+      });
+    });
+    setIsMyTurn(true);
+  }, []);
+
   useEffect(() => {
     const eventSource = new EventSource(`${endpoints.events}/${uid}`);
 
-    eventSource.addEventListener(eventTypes.start, (event) => {
-      const data = JSON.parse(event.data);
-
-      setLobbyStarted(true);
-      setXPlayer(data.xPlayer);
-      setIsMyTurn(data.xPlayer);
-    });
-
-    eventSource.addEventListener(eventTypes.turn, (event) => {
-      const { row, col, xPlayer } = JSON.parse(event.data);
-
-      setCurrentGameBoard(
-        currentGameBoard.map((item) => {
-          if (item.position[0] === row && item.position[1] === col) {
-            item.field = xPlayer ? 'X' : 'O';
-          }
-
-          return item;
-        })
-      );
-      setIsMyTurn(true);
-    });
+    eventSource.addEventListener(eventTypes.start, startHandler);
+    eventSource.addEventListener(eventTypes.turn, turnHandler);
 
     return () => {
+      eventSource.removeEventListener(eventTypes.start, startHandler);
+      eventSource.removeEventListener(eventTypes.turn, turnHandler);
       eventSource.close();
     };
-    // TODO: выяснить как обработать завистимости, возможно нужно достать из useEffect'a
-  }, [uid]);
+  }, [uid, startHandler, turnHandler]);
 
   const playerTurnClickHandler = (event, position) => {
     if (event.currentTarget.textContent !== '') return;
@@ -59,13 +63,17 @@ export const Lobby = () => {
     setCurrentGameBoard(
       currentGameBoard.map((item) => {
         if (item.position[0] === row && item.position[1] === col) {
-          item.field = xPlayer ? 'X' : 'O';
+          item.value = xPlayer ? 'X' : 'O';
         }
 
         return item;
       })
     );
   };
+
+  const isBoardFinished = (row, col, player) => {};
+
+  console.log(currentGameBoard);
 
   return (
     <div>
@@ -74,8 +82,8 @@ export const Lobby = () => {
         <div>{lobbyStarted ? `you are on the ${xPlayer ? 'X' : 'O'}-side` : 'waiting for players'}</div>
         {isMyTurn && <div>make a turn</div>}
         <div className={styles.board}>
-          {currentGameBoard.map(({ id, field, position }) => (
-            <GameButton key={id} name={field} onClick={(event) => playerTurnClickHandler(event, position)} />
+          {currentGameBoard.map(({ id, value, position }) => (
+            <GameButton key={id} name={value} onClick={(event) => playerTurnClickHandler(event, position)} />
           ))}
         </div>
       </div>

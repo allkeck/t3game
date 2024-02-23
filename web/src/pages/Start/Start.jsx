@@ -13,6 +13,7 @@ export const Start = () => {
     setGame(gameData);
   };
 
+  // TODO: избавиться от кнопки создания лобби, передав эту логику в линк
   return (
     <>
       <h1>Krestiki vs Noliki</h1>
