@@ -1,13 +1,12 @@
 import { expect, test } from 'vitest';
-import { createIsBoardFinished } from './isBoardFinished';
+import { isBoardFinished } from './isBoardFinished';
 import { gameBoard } from '../shared/constants';
 
 test('first turn', () => {
   const board = JSON.parse(JSON.stringify(gameBoard));
   board[0].value = 'X';
-  const checkBoard = createIsBoardFinished(board);
 
-  expect(checkBoard(0, 0, 'X')).toBe(false);
+  expect(isBoardFinished(0, 0, 'X', board)).toBe(false);
 });
 
 test('won by row', () => {
@@ -15,9 +14,8 @@ test('won by row', () => {
   board[0].value = 'X';
   board[1].value = 'X';
   board[2].value = 'X';
-  const checkBoard = createIsBoardFinished(board);
 
-  expect(checkBoard(0, 2, 'X')).toBe(true);
+  expect(isBoardFinished(0, 2, 'X', board)).toBe(true);
 });
 
 test('won by col', () => {
@@ -25,9 +23,8 @@ test('won by col', () => {
   board[0].value = 'X';
   board[3].value = 'X';
   board[6].value = 'X';
-  const checkBoard = createIsBoardFinished(board);
 
-  expect(checkBoard(2, 0, 'X')).toBe(true);
+  expect(isBoardFinished(2, 0, 'X', board)).toBe(true);
 });
 
 test('won by diag', () => {
@@ -35,7 +32,6 @@ test('won by diag', () => {
   board[0].value = 'X';
   board[4].value = 'X';
   board[8].value = 'X';
-  const checkBoard = createIsBoardFinished(board);
 
-  expect(checkBoard(2, 2, 'X')).toBe(true);
+  expect(isBoardFinished(2, 2, 'X', board)).toBe(true);
 });
