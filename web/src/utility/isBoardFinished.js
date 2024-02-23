@@ -1,17 +1,24 @@
 export const isBoardFinished = (row, col, player, currentGameBoard) => {
-  let rowFinished = true;
-  let colFinished = true;
-  let mainDiagFinished = row === col;
-  let secondaryDiagFinished = row + col === 2;
+  const rowFinished = [];
+  const colFinished = [];
+  const mainDiagFinished = [];
+  const secondaryDiagFinished = [];
 
-  for (let cell of currentGameBoard) {
-    let [cellRow, cellCol] = cell.position;
+  for (let i = 0; i < currentGameBoard.length; i++) {
+    const cell = currentGameBoard[i];
+    const [cellRow, cellCol] = cell.position;
 
-    if (cellRow === row) rowFinished &&= cell.value === player;
-    if (cellCol === col) colFinished &&= cell.value === player;
-    if (cellRow === cellCol) mainDiagFinished &&= cell.value === player;
-    if (cellRow + cellCol === 2) secondaryDiagFinished &&= cell.value === player;
+    if (cellRow === row && cell.value === player) rowFinished.push(i);
+    if (cellCol === col && cell.value === player) colFinished.push(i);
+    if (row === col && cellRow === cellCol && cell.value === player) mainDiagFinished.push(i);
+    if (row + col === 2 && cellRow + cellCol === 2 && cell.value === player) secondaryDiagFinished.push(i);
   }
 
-  return rowFinished || colFinished || mainDiagFinished || secondaryDiagFinished;
+  return (
+    (rowFinished.length === 3 && rowFinished) ||
+    (colFinished.length === 3 && colFinished) ||
+    (mainDiagFinished.length === 3 && mainDiagFinished) ||
+    (secondaryDiagFinished.length === 3 && secondaryDiagFinished) ||
+    []
+  );
 };

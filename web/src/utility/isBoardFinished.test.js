@@ -6,7 +6,7 @@ test('first turn', () => {
   const board = JSON.parse(JSON.stringify(gameBoard));
   board[0].value = 'X';
 
-  expect(isBoardFinished(0, 0, 'X', board)).toBe(false);
+  expect(isBoardFinished(0, 0, 'X', board)).toStrictEqual([]);
 });
 
 test('won by row', () => {
@@ -15,7 +15,7 @@ test('won by row', () => {
   board[1].value = 'X';
   board[2].value = 'X';
 
-  expect(isBoardFinished(0, 2, 'X', board)).toBe(true);
+  expect(isBoardFinished(0, 2, 'X', board)).toStrictEqual([0, 1, 2]);
 });
 
 test('won by col', () => {
@@ -24,7 +24,7 @@ test('won by col', () => {
   board[3].value = 'X';
   board[6].value = 'X';
 
-  expect(isBoardFinished(2, 0, 'X', board)).toBe(true);
+  expect(isBoardFinished(2, 0, 'X', board)).toStrictEqual([0, 3, 6]);
 });
 
 test('won by diag', () => {
@@ -33,5 +33,5 @@ test('won by diag', () => {
   board[4].value = 'X';
   board[8].value = 'X';
 
-  expect(isBoardFinished(2, 2, 'X', board)).toBe(true);
+  expect(isBoardFinished(2, 2, 'X', board)).toStrictEqual([0, 4, 8]);
 });

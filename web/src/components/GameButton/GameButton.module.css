@@ -7,6 +7,10 @@
   background-color: #eeeeee;
 }
 
+.won-cell {
+  background-color: aquamarine;
+}
+
 @media (prefers-color-scheme: dark) {
   .game-button {
     color: #111111;

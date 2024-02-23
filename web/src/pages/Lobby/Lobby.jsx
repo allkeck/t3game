@@ -16,6 +16,7 @@ export const Lobby = () => {
   const [currentGameBoard, setCurrentGameBoard] = useState(gameBoard);
   const [playerWon, setPlayerWon] = useState(null);
   const [lastTurn, setLastTurn] = useState(null);
+  const [wonCells, setWonCells] = useState([]);
 
   const eventSourceRef = useRef(null);
 
@@ -48,9 +49,12 @@ export const Lobby = () => {
   useEffect(() => {
     if (lastTurn !== null) {
       const { row, col, xPlayer } = lastTurn;
-      if (isBoardFinished(row, col, xPlayer ? 'X' : 'O', currentGameBoard)) {
+      const boardResult = isBoardFinished(row, col, xPlayer ? 'X' : 'O', currentGameBoard);
+
+      if (boardResult.length) {
         setPlayerWon(xPlayer ? 'X' : 'O');
         setIsMyTurn(false);
+        setWonCells(boardResult);
       }
     }
   }, [currentGameBoard, lastTurn]);
@@ -103,8 +107,8 @@ export const Lobby = () => {
         {isMyTurn && <div>make a turn</div>}
         {playerWon && <div>{playerWon === (xPlayer ? 'X' : 'O') ? 'you won!' : 'you lose'}</div>}
         <div className={styles.board}>
-          {currentGameBoard.map(({ id, value, position }) => (
-            <GameButton key={id} name={value} onClick={(event) => playerTurnClickHandler(event, position)} />
+          {currentGameBoard.map(({ id, value, position }, index) => (
+            <GameButton key={id} name={value} playerTurn={(event) => playerTurnClickHandler(event, position)} isWonCell={wonCells.includes(index)} />
           ))}
         </div>
       </div>
