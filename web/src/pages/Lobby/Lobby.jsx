@@ -2,18 +2,18 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { sendTurnData } from '../../api/sendTurnData';
-import { endpoints, eventTypes, gameBoard } from '../../shared/constants';
+import { endpoints, eventTypes, getGameBoard } from '../../shared/constants';
+import { isBoardFinished } from '../../utility/isBoardFinished';
 
 import { GameButton } from '../../components/GameButton/GameButton';
 
 import styles from './Lobby.module.css';
-import { isBoardFinished } from '../../utility/isBoardFinished';
 
 export const Lobby = () => {
   const [lobbyStarted, setLobbyStarted] = useState(false);
   const [xPlayer, setXPlayer] = useState(false);
   const [isMyTurn, setIsMyTurn] = useState(false);
-  const [currentGameBoard, setCurrentGameBoard] = useState(gameBoard);
+  const [currentGameBoard, setCurrentGameBoard] = useState(getGameBoard());
   const [playerWon, setPlayerWon] = useState(null);
   const [lastTurn, setLastTurn] = useState(null);
   const [wonCells, setWonCells] = useState([]);

@@ -9,7 +9,7 @@ export const eventTypes = {
   turn: 'turn',
 };
 
-export const gameBoard = [
+export const getGameBoard = () => [
   { id: 1, value: '', position: [0, 0] },
   { id: 2, value: '', position: [0, 1] },
   { id: 3, value: '', position: [0, 2] },
