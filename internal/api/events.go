@@ -22,7 +22,7 @@ func EventsHandlerCreator(app *app.GameApp) func(w http.ResponseWriter, r *http.
 
 		uid := strings.TrimPrefix(r.URL.Path, "/events/")
 
-		ch, err := app.ConnectToLobby(uid)
+		lobby, err := app.ConnectToLobby(uid)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(err.Error()))
@@ -46,15 +46,24 @@ func EventsHandlerCreator(app *app.GameApp) func(w http.ResponseWriter, r *http.
 		flusher.Flush()
 
 		var msg sseMsg
-		for gm := range ch {
-			slog.Info("got msg", "gm", gm)
+	loop:
+		for {
+			select {
+			case gm := <-lobby.Ch:
+				logger.Info("got msg", "gm", gm)
 
-			msg.from(gm)
+				msg.from(gm)
 
-			fmt.Fprint(w, msg)
-			flusher.Flush()
+				fmt.Fprint(w, msg)
+				flusher.Flush()
+			case <-r.Context().Done():
+				app.PlayerDisconnected(uid, lobby.Side)
+				break loop
+			}
 		}
+		logger.Info("sse connection aborted")
 	}
+
 }
 
 func (m sseMsg) String() string {

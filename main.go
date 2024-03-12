@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
 	"path"
@@ -11,7 +9,6 @@ import (
 	"strings"
 	"t3game/internal/api"
 	"t3game/internal/app"
-	"time"
 )
 
 const (
@@ -63,15 +60,12 @@ func main() {
 
 	router.HandleFunc(regexp.MustCompile("/turn"), api.TurnHandlerCreator(gapp))
 
-	router.HandleFunc(regexp.MustCompile("/test"), randomHandler)
-
 	webHandler := http.FileServer(http.Dir(FSPATH))
 	router.HandleFunc(regexp.MustCompile("/"), func(w http.ResponseWriter, r *http.Request) {
 		// stolen from https://stackoverflow.com/a/64687181
 		// If the requested file exists then return if; otherwise return index.html (fileserver default page)
 		if r.URL.Path != "/" {
 			fullPath := FSPATH + strings.TrimPrefix(path.Clean(r.URL.Path), "/")
-			log.Printf("fullPath: %s\n", fullPath)
 			_, err := os.Stat(fullPath)
 			if err != nil {
 				if !os.IsNotExist(err) {
@@ -85,19 +79,4 @@ func main() {
 	})
 
 	log.Fatal(http.ListenAndServe(":7000", &router))
-}
-
-func randomHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("Content-Type", "text/event-stream")
-
-	// send a random number every 2 seconds
-	for {
-		rand.Seed(time.Now().UnixNano())
-		fmt.Fprintf(w, "data: %d \n\n", rand.Intn(100))
-		w.(http.Flusher).Flush()
-		time.Sleep(2 * time.Second)
-	}
 }

@@ -41,6 +41,13 @@ type (
 	LobbyNotFoundError struct {
 		Uid string
 	}
+
+	Side uint8
+
+	PlayerCh struct {
+		Ch   chan GameMsg
+		Side Side
+	}
 )
 
 func NewGameApp() *GameApp {
@@ -92,7 +99,40 @@ func (app *GameApp) MakeTurn(pt PlayerTurn) error {
 	return nil
 }
 
-func (app *GameApp) ConnectToLobby(uid string) (ch chan GameMsg, err error) {
+func (app *GameApp) PlayerDisconnected(uid string, side Side) (err error) {
+	logger := slog.With("op", "app:PlayerDisconnected", "uid", uid)
+
+	app.lmu.Lock()
+	defer app.lmu.Unlock()
+	l, found := app.lobbys[uid]
+
+	if !found {
+		err = LobbyNotFoundError{uid}
+		return
+	}
+
+	var ch chan GameMsg
+	if side == XSide {
+		l.xConnected = false
+		ch = l.oPlayer
+	} else if side == OSide {
+		l.oConnected = false
+		ch = l.xPlayer
+	}
+	logger.Info("player disconnected", "side", side.String())
+
+	if l.isBothDisconnected() {
+		delete(app.lobbys, uid)
+		logger.Info("lobby deleted")
+	} else {
+		ch <- opponentDisconnectedGameMsg
+		app.lobbys[uid] = l
+	}
+
+	return nil
+}
+
+func (app *GameApp) ConnectToLobby(uid string) (ch PlayerCh, err error) {
 	logger := slog.With("op", "app:ConnectToLobby", "uid", uid)
 
 	app.lmu.Lock()
@@ -113,17 +153,21 @@ func (app *GameApp) ConnectToLobby(uid string) (ch chan GameMsg, err error) {
 		switch rand.Intn(2) {
 		case 0:
 			l.xConnected = true
-			ch = l.xPlayer
+			ch.Side = XSide
+			ch.Ch = l.xPlayer
 		case 1:
 			l.oConnected = true
-			ch = l.oPlayer
+			ch.Side = OSide
+			ch.Ch = l.oPlayer
 		}
 	} else if l.oConnected {
 		l.xConnected = true
-		ch = l.xPlayer
+		ch.Side = XSide
+		ch.Ch = l.xPlayer
 	} else if l.xConnected {
 		l.oConnected = true
-		ch = l.oPlayer
+		ch.Side = OSide
+		ch.Ch = l.oPlayer
 	} else {
 		err = ErrPlayersAlreadyConnected
 		return
@@ -165,6 +209,10 @@ func (l *lobby) isBothConnected() bool {
 	return l.xConnected && l.oConnected
 }
 
+func (l *lobby) isBothDisconnected() bool {
+	return !l.xConnected && !l.oConnected
+}
+
 func (l *lobby) startGame() error {
 	if !l.isBothConnected() {
 		return ErrPlayersNotConnected
@@ -187,6 +235,10 @@ var (
 		Event: "turn",
 	}
 
+	opponentDisconnectedGameMsg = GameMsg{
+		Event: "disconnected",
+	}
+
 	startGameMsg = GameMsg{
 		Event: "start",
 	}
@@ -197,3 +249,18 @@ var (
 	ErrPlayersAlreadyConnected = fmt.Errorf("players already connected")
 	ErrLobbyNotGoing           = fmt.Errorf("lobby not going")
 )
+
+const (
+	XSide Side = iota
+	OSide Side = iota
+)
+
+func (s *Side) String() string {
+	if *s == XSide {
+		return "X-Player"
+	}
+	if *s == OSide {
+		return "O-Player"
+	}
+	panic(fmt.Sprintf("unkonwn Side value: %v", uint8(*s)))
+}
